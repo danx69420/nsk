@@ -1,0 +1,1301 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Terminal</title>
+<style>
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  min-height: 100%;
+  background: #000000;
+}
+
+body {
+  color: #222;
+  font-family: Ubuntu, "DejaVu Sans Mono", monospace;
+}
+
+.window {
+  width: min(100% - 36px, 1180px);
+  height: min(680px, calc(100vh - 56px));
+  min-height: 430px;
+  margin: 28px auto;
+  border: 1px solid #555;
+  border-radius: 10px 10px 0 0;
+  overflow: hidden;
+  background: #000;
+  box-shadow: 0 2px 8px #0008;
+  display: flex;
+  flex-direction: column;
+}
+
+.titlebar {
+  height: 54px;
+  flex: 0 0 54px;
+  display: flex;
+  align-items: center;
+  background: #292929;
+  color: #f2f2f2;
+  padding: 0 12px;
+  gap: 14px;
+  border-bottom: 1px solid #111;
+}
+
+.app-icon {
+  width: 38px;
+  height: 38px;
+  border: 1px solid #454545;
+  border-radius: 6px;
+  display: grid;
+  place-items: center;
+  background: #333;
+}
+
+.window-title {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font: 600 16px Ubuntu, sans-serif;
+}
+
+.top-icon, .window-control {
+  color: #ddd;
+  background: #353535;
+  border: 1px solid #454545;
+  width: 39px;
+  height: 38px;
+  border-radius: 7px;
+  display: grid;
+  place-items: center;
+  font: 20px Arial, sans-serif;
+}
+
+.window-control {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+}
+
+.terminal {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 8px 7px 12px;
+  background: #300a24;
+  color: #f4edf2;
+  font: 17px/1.38 "DejaVu Sans Mono", monospace;
+  scrollbar-color: #777 #300a24;
+}
+
+.output {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.prompt-line {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+}
+
+.prompt { white-space: nowrap; }
+
+.userhost {
+  color: #19b36b;
+  font-weight: 700;
+}
+
+.path {
+  color: #2866bd;
+  font-weight: 700;
+}
+
+.dollar { color: #eee; }
+
+#command {
+  flex: 1;
+  min-width: 90px;
+  background: transparent;
+  border: 0;
+  outline: 0;
+  color: white;
+  caret-color: white;
+  font: inherit;
+  padding: 0;
+}
+
+.list-heading {
+  color: #19b36b;
+  font-weight: 700;
+  margin: 5px 0 12px;
+}
+
+.assignment-card {
+  max-width: 900px;
+  margin: 12px 0 18px;
+  padding: 12px;
+  border: 1px solid #444;
+  border-radius: 5px;
+  background: #101010;
+}
+
+.assignment-name {
+  color: #19b36b;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.statement {
+  color: #f2f2f2;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font: inherit;
+  margin: 0 0 12px;
+}
+
+.program-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 8px 0 2px;
+}
+
+.copy-btn, .back-btn {
+  border: 1px solid #777;
+  color: white;
+  background: #222;
+  border-radius: 4px;
+  padding: 7px 13px;
+  cursor: pointer;
+  font: 600 13px Ubuntu, sans-serif;
+}
+
+.copy-btn:hover, .back-btn:hover {
+  background: #444;
+}
+
+.status {
+  color: #19b36b;
+  font-size: 13px;
+}
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 12px 0;
+}
+
+@media(max-width:600px) {
+  .window {
+    width: calc(100% - 16px);
+    height: calc(100vh - 24px);
+    margin: 12px auto;
+    min-height: 350px;
+  }
+
+  .titlebar { gap: 8px; padding: 0 8px; }
+  .window-title { font-size: 12px; }
+  .top-icon { display: none; }
+  .terminal { font-size: 14px; }
+}
+</style>
+</head>
+
+<body>
+
+<div class="window">
+
+  <div class="titlebar">
+    <div class="app-icon">⌑</div>
+    <div class="window-title">
+      student@student-HP-ProDesk-400-G4-SFF: ~
+    </div>
+    <div class="top-icon">⌕</div>
+    <div class="top-icon">☰</div>
+    <div class="window-control">−</div>
+    <div class="window-control">□</div>
+    <div class="window-control">×</div>
+  </div>
+
+  <main class="terminal" id="terminal">
+    <div id="screen">
+      <div class="output">^C</div>
+      <div class="prompt-line">
+        <span class="prompt">
+          <span class="userhost">student@student-HP-ProDesk-400-G4-SFF</span>:<span class="path">~</span><span class="dollar">$ </span>
+        </span>
+        <input id="command" autocomplete="off" autofocus>
+      </div>
+    </div>
+  </main>
+
+</div>
+
+<script>
+
+const codes = [
+
+`#!/bin/bash
+
+while true
+do
+    echo "----- ADDRESS BOOK -----"
+    echo "1. Create Address Book"
+    echo "2. View Address Book"
+    echo "3. Insert Record"
+    echo "4. Delete Record"
+    echo "5. Modify Record"
+    echo "6. Exit"
+    echo "------------------------"
+    read -p "Enter your choice: " choice
+    case $choice in
+    1)
+        read -p "Enter file name: " file
+        echo -e "NAME\\tPHONE\\tADDRESS\\tBRANCH\\tCGPA\\tHOSTELLITE?(Y/N)\\t" > "$file"
+        echo "Address book created."
+        read -p "Enter name: " name
+        read -p "Enter phone: " phone
+        read -p "Enter address: " address
+        read -p "Enter branch: " branch
+        read -p "Enter CGPA: " cgpa
+        read -p "Hostellite or not? (Y/N): " hostel
+        echo -e "$name\\t$phone\\t$address\\t$branch\\t$cgpa\\t$hostel" >> "$file"
+        ;;
+    2)
+        if [ -f "$file" ]; then
+            cat "$file"
+        else
+            echo "Address book does not exist."
+        fi
+        ;;
+    3)
+        read -p "Enter name: " name
+        read -p "Enter phone: " phone
+        read -p "Enter address: " address
+        read -p "Enter branch: " branch
+        read -p "Enter CGPA: " cgpa
+        read -p "Hostellite or not? (Y/N): " hostel
+        echo -e "$name\\t$phone\\t$address\\t$branch\\t$cgpa\\t$hostel" >> "$file"
+        echo "Record inserted."
+        ;;
+    4)
+        read -p "Enter name to delete: " name
+        grep -v "^file" > temp
+        mv temp "$file"
+        echo "Record deleted."
+        ;;
+    5)
+        read -p "Enter name to modify: " name
+        grep -v "^file" > temp
+        mv temp "$file"
+        read -p "Enter new name: " newname
+        read -p "Enter new phone: " phone
+        read -p "Enter new address: " address
+        read -p "Enter branch: " branch
+        read -p "Enter CGPA: " cgpa
+        read -p "Hostellite or not? (Y/N): " hostel
+        echo -e "$name\\t$phone\\t$address\\t$branch\\t$cgpa\\t$hostel" >> "$file"
+        echo "Record modified."
+        ;;
+    6)
+        echo "Exiting..."
+        break
+        ;;
+    *)
+        echo "Invalid choice."
+        ;;
+    esac
+done`,
+
+`#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <sys/wait.h>
+#include <sys/types.h>
+
+void bubbleSort(int arr[], int n)
+{
+    int i, j, temp;
+    for (i = 0; i < n - 1; i++)
+    {
+        for (j = 0; j < n - i - 1; j++)
+        {
+            if (arr[j] > arr[j + 1])
+            {
+                temp = arr[j];
+                arr[j] = arr[j + 1];
+                arr[j + 1] = temp;
+            }
+        }
+    }
+}
+
+void display(int arr[], int n)
+{
+    int i;
+    for (i = 0; i < n; i++)
+        printf("%d ", arr[i]);
+    printf("\\n");
+}
+
+int main()
+{
+    int n, i;
+    int arr[100];
+
+    printf("Enter number of integers: ");
+    scanf("%d", &n);
+    printf("Enter %d integers:\\n", n);
+
+    for (i = 0; i < n; i++)
+        scanf("%d", &arr[i]);
+
+    pid_t pid = fork();
+
+    if (pid < 0)
+    {
+        perror("fork failed");
+        exit(1);
+    }
+
+    if (pid == 0)
+    {
+        printf("\\n--- Child Process (Zombie Demo) ---\\n");
+        printf("Child PID  : %d\\n", getpid());
+        printf("Parent PID : %d\\n", getppid());
+
+        bubbleSort(arr, n);
+
+        printf("Child sorted array: ");
+        display(arr, n);
+
+        printf("Child is terminating...\\n");
+        exit(0);
+    }
+    else
+    {
+        printf("\\n--- Parent Process (Zombie Demo) ---\\n");
+        printf("Parent PID : %d\\n", getpid());
+        printf("Child PID  : %d\\n", pid);
+
+        bubbleSort(arr, n);
+
+        printf("Parent sorted array: ");
+        display(arr, n);
+
+        printf("\\nParent sleeping for 10 seconds without wait()...\\n");
+        printf("Child may become a ZOMBIE during this time.\\n");
+
+        sleep(10);
+        wait(NULL);
+
+        printf("Zombie process cleared using wait().\\n");
+    }
+
+    pid_t pid2 = fork();
+
+    if (pid2 < 0)
+    {
+        perror("fork failed");
+        exit(1);
+    }
+
+    if (pid2 == 0)
+    {
+        printf("\\n--- Child Process (Orphan Demo) ---\\n");
+        printf("Child PID        : %d\\n", getpid());
+        printf("Original Parent  : %d\\n", getppid());
+
+        printf("Child sleeping for 10 seconds...\\n");
+        sleep(10);
+
+        printf("New Parent PID   : %d\\n", getppid());
+        printf("Child is still running as an ORPHAN.\\n");
+        exit(0);
+    }
+    else
+    {
+        printf("\\n--- Parent Process (Orphan Demo) ---\\n");
+        printf("Parent PID : %d\\n", getpid());
+        printf("Child PID  : %d\\n", pid2);
+        printf("Parent is exiting before the child...\\n");
+        exit(0);
+    }
+
+    return 0;
+}`,
+
+`#include <stdio.h>
+#include <pthread.h>
+#include <semaphore.h>
+#include <stdlib.h>
+#include <time.h>
+
+#define SIZE 5
+
+int buffer[SIZE];
+int in = 0, out = 0;
+
+sem_t empty, full;
+pthread_mutex_t mutex;
+
+void *producer(void *arg)
+{
+    int item;
+    int count = 0;
+
+    while (count < 25)
+    {
+        item = rand() % 50 + 1;
+        sem_wait(&empty);
+        pthread_mutex_lock(&mutex);
+
+        buffer[in] = item;
+        printf("Produced: %d\\n", item);
+        in = (in + 1) % SIZE;
+
+        pthread_mutex_unlock(&mutex);
+        sem_post(&full);
+        count++;
+    }
+
+    return NULL;
+}
+
+void *consumer(void *arg)
+{
+    int item;
+    int count = 0;
+
+    while (count < 25)
+    {
+        sem_wait(&full);
+        pthread_mutex_lock(&mutex);
+
+        item = buffer[out];
+        printf("Consumed: %d\\n", item);
+        out = (out + 1) % SIZE;
+
+        pthread_mutex_unlock(&mutex);
+        sem_post(&empty);
+        count++;
+    }
+
+    return NULL;
+}
+
+int main()
+{
+    pthread_t p, c;
+    srand(time(0));
+
+    sem_init(&empty, 0, SIZE);
+    sem_init(&full, 0, 0);
+    pthread_mutex_init(&mutex, NULL);
+
+    pthread_create(&p, NULL, producer, NULL);
+    pthread_create(&c, NULL, consumer, NULL);
+
+    pthread_join(p, NULL);
+    pthread_join(c, NULL);
+
+    sem_destroy(&empty);
+    sem_destroy(&full);
+    pthread_mutex_destroy(&mutex);
+
+    return 0;
+}`,
+
+`#include <stdio.h>
+#include <pthread.h>
+#include <semaphore.h>
+#include <unistd.h>
+
+#define N 5
+
+sem_t forks[N];
+sem_t room;
+
+void *philosopher(void *arg)
+{
+    int id = *(int *)arg;
+    int left = id;
+    int right = (id + 1) % N;
+
+    printf("Philosopher %d is thinking\\n", id);
+    sleep(1);
+
+    sem_wait(&room);
+    sem_wait(&forks[left]);
+    sem_wait(&forks[right]);
+
+    printf("Philosopher %d is eating\\n", id);
+    sleep(1);
+
+    sem_post(&forks[right]);
+    sem_post(&forks[left]);
+    sem_post(&room);
+
+    printf("Philosopher %d finished eating\\n", id);
+    return NULL;
+}
+
+int main()
+{
+    pthread_t threads[N];
+    int id[N];
+
+    sem_init(&room, 0, N - 1);
+
+    for (int i = 0; i < N; i++)
+        sem_init(&forks[i], 0, 1);
+
+    for (int i = 0; i < N; i++)
+    {
+        id[i] = i;
+        pthread_create(&threads[i], NULL, philosopher, &id[i]);
+    }
+
+    for (int i = 0; i < N; i++)
+        pthread_join(threads[i], NULL);
+
+    for (int i = 0; i < N; i++)
+        sem_destroy(&forks[i]);
+
+    sem_destroy(&room);
+    return 0;
+}`,
+
+`#include <stdio.h>
+
+int main()
+{
+    int n, m;
+    int allocation[10][10], max[10][10], need[10][10];
+    int available[10], work[10], finish[10];
+    int safe[10], count = 0;
+
+    printf("Enter number of processes: ");
+    scanf("%d", &n);
+    printf("Enter number of resources: ");
+    scanf("%d", &m);
+
+    printf("Enter Allocation Matrix:\\n");
+    for (int i = 0; i < n; i++)
+        for (int j = 0; j < m; j++)
+            scanf("%d", &allocation[i][j]);
+
+    printf("Enter Max Matrix:\\n");
+    for (int i = 0; i < n; i++)
+        for (int j = 0; j < m; j++)
+            scanf("%d", &max[i][j]);
+
+    printf("Enter Available Resources:\\n");
+    for (int j = 0; j < m; j++)
+        scanf("%d", &available[j]);
+
+    for (int i = 0; i < n; i++)
+        for (int j = 0; j < m; j++)
+            need[i][j] = max[i][j] - allocation[i][j];
+
+    for (int j = 0; j < m; j++)
+        work[j] = available[j];
+
+    for (int i = 0; i < n; i++)
+        finish[i] = 0;
+
+    while (count < n)
+    {
+        int found = 0;
+
+        for (int i = 0; i < n; i++)
+        {
+            if (finish[i] == 0)
+            {
+                int j;
+
+                for (j = 0; j < m; j++)
+                {
+                    if (need[i][j] > work[j])
+                        break;
+                }
+
+                if (j == m)
+                {
+                    for (j = 0; j < m; j++)
+                        work[j] += allocation[i][j];
+
+                    safe[count++] = i;
+                    finish[i] = 1;
+                    found = 1;
+                }
+            }
+        }
+
+        if (found == 0)
+        {
+            printf("System is not in a safe state.\\n");
+            return 0;
+        }
+    }
+
+    printf("System is in a safe state.\\n");
+    printf("Safe Sequence: ");
+
+    for (int i = 0; i < n; i++)
+        printf("P%d ", safe[i]);
+
+    printf("\\n");
+    return 0;
+}`,
+
+`#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include <sys/stat.h>
+
+#define FIFO1 "fifo1"
+#define FIFO2 "fifo2"
+
+int main()
+{
+    char buffer[1024];
+    int fd1, fd2;
+    ssize_t n;
+
+    mkfifo(FIFO1, 0666);
+    mkfifo(FIFO2, 0666);
+
+    printf("Enter sentences (type END to finish):\\n");
+    fd1 = open(FIFO1, O_WRONLY);
+
+    while (fgets(buffer, sizeof(buffer), stdin))
+    {
+        if (strcmp(buffer, "END\\n") == 0 ||
+            strcmp(buffer, "END") == 0)
+            break;
+
+        if (write(fd1, buffer, strlen(buffer)) == -1)
+        {
+            perror("Write failed");
+            close(fd1);
+            return 1;
+        }
+    }
+
+    close(fd1);
+
+    fd2 = open(FIFO2, O_RDONLY);
+    printf("\\nResult received from Process 2:\\n\\n");
+
+    while ((n = read(fd2, buffer, sizeof(buffer))) > 0)
+        write(STDOUT_FILENO, buffer, n);
+
+    close(fd2);
+    unlink(FIFO1);
+    unlink(FIFO2);
+
+    return 0;
+}`,
+
+`#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <ctype.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include <sys/stat.h>
+
+#define FIFO1 "fifo1"
+#define FIFO2 "fifo2"
+
+int main()
+{
+    char buffer[1024];
+    int fd1, fd2;
+    FILE *fp;
+    ssize_t n;
+
+    long characters = 0;
+    long words = 0;
+    long lines = 0;
+    int in_word = 0;
+
+    mkfifo(FIFO1, 0666);
+    mkfifo(FIFO2, 0666);
+
+    fd1 = open(FIFO1, O_RDONLY);
+
+    while ((n = read(fd1, buffer, sizeof(buffer))) > 0)
+    {
+        for (ssize_t i = 0; i < n; i++)
+        {
+            unsigned char ch = (unsigned char)buffer[i];
+
+            characters++;
+
+            if (ch == '\\n')
+                lines++;
+
+            if (isspace(ch))
+                in_word = 0;
+            else if (!in_word)
+            {
+                words++;
+                in_word = 1;
+            }
+        }
+    }
+
+    close(fd1);
+
+    fp = fopen("output.txt", "w");
+
+    if (fp == NULL)
+    {
+        perror("Unable to create output file");
+        return 1;
+    }
+
+    fprintf(fp, "Number of characters: %ld\\n", characters);
+    fprintf(fp, "Number of words: %ld\\n", words);
+    fprintf(fp, "Number of lines: %ld\\n", lines);
+
+    fclose(fp);
+
+    fp = fopen("output.txt", "r");
+
+    if (fp == NULL)
+    {
+        perror("Unable to open output file");
+        return 1;
+    }
+
+    fd2 = open(FIFO2, O_WRONLY);
+
+    while ((n = fread(buffer, 1, sizeof(buffer), fp)) > 0)
+    {
+        if (write(fd2, buffer, n) == -1)
+        {
+            perror("Write failed");
+            fclose(fp);
+            close(fd2);
+            return 1;
+        }
+    }
+
+    fclose(fp);
+    close(fd2);
+
+    printf("Analysis completed. Results saved in output.txt\\n");
+    return 0;
+}`,
+
+`#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include <sys/wait.h>
+
+int main()
+{
+    int pipe1[2], pipe2[2];
+    pid_t pid;
+    char filename[256];
+    char buffer[1024];
+    ssize_t n;
+
+    if (pipe(pipe1) == -1 || pipe(pipe2) == -1)
+    {
+        perror("Pipe creation failed");
+        return 1;
+    }
+
+    pid = fork();
+
+    if (pid < 0)
+    {
+        perror("Fork failed");
+        return 1;
+    }
+
+    if (pid > 0)
+    {
+        close(pipe1[0]);
+        close(pipe2[1]);
+
+        printf("Enter file pathname: ");
+        fgets(filename, sizeof(filename), stdin);
+
+        filename[strcspn(filename, "\\n")] = '\\0';
+
+        write(pipe1[1], filename, strlen(filename) + 1);
+        close(pipe1[1]);
+
+        printf("\\nFile contents received from child:\\n\\n");
+
+        while ((n = read(pipe2[0], buffer, sizeof(buffer))) > 0)
+            write(STDOUT_FILENO, buffer, n);
+
+        close(pipe2[0]);
+        wait(NULL);
+    }
+    else
+    {
+        close(pipe1[1]);
+        close(pipe2[0]);
+
+        n = read(pipe1[0], filename, sizeof(filename));
+        close(pipe1[0]);
+
+        if (n <= 0)
+        {
+            perror("Failed to receive filename");
+            close(pipe2[1]);
+            exit(1);
+        }
+
+        int fd = open(filename, O_RDONLY);
+
+        if (fd == -1)
+        {
+            perror("File opening failed");
+            close(pipe2[1]);
+            exit(1);
+        }
+
+        while ((n = read(fd, buffer, sizeof(buffer))) > 0)
+        {
+            if (write(pipe2[1], buffer, n) == -1)
+            {
+                perror("Pipe write failed");
+                close(fd);
+                close(pipe2[1]);
+                exit(1);
+            }
+        }
+
+        close(fd);
+        close(pipe2[1]);
+        exit(0);
+    }
+
+    return 0;
+}`,
+
+`#include <stdio.h>
+#include <stdlib.h>
+
+void sort(int a[], int n)
+{
+    int i, j, temp;
+
+    for (i = 0; i < n - 1; i++)
+    {
+        for (j = 0; j < n - i - 1; j++)
+        {
+            if (a[j] > a[j + 1])
+            {
+                temp = a[j];
+                a[j] = a[j + 1];
+                a[j + 1] = temp;
+            }
+        }
+    }
+}
+
+int main()
+{
+    int n, head, cylinders;
+    int req[100], a[100];
+    int i, j;
+    int current, total;
+    int left[100], right[100];
+    int l = 0, r = 0;
+
+    printf("Enter number of disk requests: ");
+    scanf("%d", &n);
+
+    if (n < 1 || n > 100)
+    {
+        printf("Invalid number of requests.\\n");
+        return 1;
+    }
+
+    printf("Enter disk requests:\\n");
+
+    for (i = 0; i < n; i++)
+        scanf("%d", &req[i]);
+
+    printf("Enter initial head position: ");
+    scanf("%d", &head);
+
+    printf("Enter total number of cylinders: ");
+    scanf("%d", &cylinders);
+
+    if (cylinders < 1 || head < 0 || head >= cylinders)
+    {
+        printf("Invalid disk size or head position.\\n");
+        return 1;
+    }
+
+    for (i = 0; i < n; i++)
+    {
+        if (req[i] < 0 || req[i] >= cylinders)
+        {
+            printf("Invalid request: %d\\n", req[i]);
+            return 1;
+        }
+
+        a[i] = req[i];
+    }
+
+    sort(a, n);
+
+    for (i = 0; i < n; i++)
+    {
+        if (a[i] <= head)
+            left[l++] = a[i];
+        else
+            right[r++] = a[i];
+    }
+
+    printf("\\nSSTF:\\n");
+
+    int visited[100] = {0};
+    current = head;
+    total = 0;
+
+    printf("Service order: ");
+
+    for (i = 0; i < n; i++)
+    {
+        int best = -1;
+        int distance = 1000000000;
+
+        for (j = 0; j < n; j++)
+        {
+            if (!visited[j])
+            {
+                int d = abs(req[j] - current);
+
+                if (d < distance)
+                {
+                    distance = d;
+                    best = j;
+                }
+            }
+        }
+
+        visited[best] = 1;
+        total += abs(req[best] - current);
+        current = req[best];
+
+        printf("%d ", current);
+    }
+
+    printf("\\nTotal head movement = %d\\n", total);
+
+    printf("\\nSCAN (moving toward cylinder 0 first):\\n");
+
+    current = head;
+    total = 0;
+
+    printf("Service order: ");
+
+    for (i = l - 1; i >= 0; i--)
+    {
+        total += abs(current - left[i]);
+        current = left[i];
+        printf("%d ", current);
+    }
+
+    total += current;
+    current = 0;
+
+    for (i = 0; i < r; i++)
+    {
+        total += abs(right[i] - current);
+        current = right[i];
+        printf("%d ", current);
+    }
+
+    printf("\\nTotal head movement = %d\\n", total);
+
+    printf("\\nC-LOOK (moving toward cylinder 0 first):\\n");
+
+    current = head;
+    total = 0;
+
+    printf("Service order: ");
+
+    for (i = l - 1; i >= 0; i--)
+    {
+        total += abs(current - left[i]);
+        current = left[i];
+        printf("%d ", current);
+    }
+
+    if (r > 0)
+    {
+        total += abs(current - right[r - 1]);
+        current = right[r - 1];
+        printf("%d ", current);
+
+        for (i = r - 2; i >= 0; i--)
+        {
+            total += abs(current - right[i]);
+            current = right[i];
+            printf("%d ", current);
+        }
+    }
+
+    printf("\\nTotal head movement = %d\\n", total);
+
+    return 0;
+}`
+
+];
+
+// ASSIGNMENT DESCRIPTIONS
+
+const assignments = [
+{
+ title: "Assignment 1",
+ statement: `Shell Programming (CO1)
+Write a program to implement an address book with options given below:
+a) Create address book. b) View address book. c) Insert a record. d) Delete a record e) Modify a record. f) Exit`,
+ programs: [{label:"COPY CODE", code:codes[0]}]
+},
+{
+ title: "Assignment 2",
+ statement: `Process Management (CO2)
+Process control system calls: The demonstration of FORK and WAIT system calls along with zombie and orphan states. Implement the C program in which main program accepts the integers to be sorted. Main program uses the FORK system call to create a new process called a child process. Parent process sorts the integers using sorting algorithm and waits for child process using WAIT system call to sort the integers using any sorting algorithm. Demonstrate zombie and orphan process.`,
+ programs: [{label:"COPY CODE", code:codes[1]}]
+},
+{
+ title: "Assignment 3",
+ statement: `Thread synchronization (CO3)
+Thread synchronization using counting semaphores and mutual exclusion using mutex.
+Application to demonstrate: producer-consumer problem with counting semaphores and mutex.`,
+ programs: [{label:"COPY CODE", code:codes[2]}]
+},
+{
+ title: "Assignment 4",
+ statement: `Thread synchronization and Deadlock handling (CO3, CO4)
+Deadlock Avoidance Using Semaphores:
+Implement the deadlock-free solution to Dining Philosophers problem to illustrate the problem of deadlock and/or starvation that can occur when many synchronized threads are competing for limited resources.`,
+ programs: [{label:"COPY CODE", code:codes[3]}]
+},
+{
+ title: "Assignment 5",
+ statement: `Deadlock avoidance (CO4)
+Implement the C program for Deadlock Avoidance Algorithm: Bankers Algorithm.`,
+ programs: [{label:"COPY CODE", code:codes[4]}]
+},
+{
+ title: "Assignment 6",
+ statement: `Interprocess Communication (CO5)
+FIFOs: Full duplex communication between two independent processes. First process accepts sentences and writes on one pipe to be read by second process and second process counts number of characters, number of words and number of lines in accepted sentences, writes this output in a text file and writes the contents of the file on second pipe to be read by first process and displays on standard output.`,
+ programs: [
+   {label:"COPY CODE 6A", code:codes[5]},
+   {label:"COPY CODE 6B", code:codes[6]}
+ ]
+},
+{
+ title: "Assignment 7",
+ statement: `Pipes (CO5)
+Full duplex communication between parent and child processes.
+Parent process writes a pathname of a file (the contents of the file are desired) on one pipe to be read by child process and child process writes the contents of the file on second pipe to be read by parent process and displays on standard output.`,
+ programs: [{label:"COPY CODE", code:codes[7]}]
+},
+{
+ title: "Assignment 8",
+ statement: `Disk Scheduling (CO5)
+Implement the C program for Disk Scheduling Algorithms: SSTF, SCAN, C-Look considering the initial head position moving away from the spindle.`,
+ programs: [{label:"COPY CODE", code:codes[8]}]
+}
+];
+
+const screen = document.getElementById('screen');
+const terminal = document.getElementById('terminal');
+
+function makePrompt() {
+  const line = document.createElement('div');
+  line.className = 'prompt-line';
+
+  const prompt = document.createElement('span');
+  prompt.className = 'prompt';
+  prompt.innerHTML =
+    '<span class="userhost">student@student-HP-ProDesk-400-G4-SFF</span>:<span class="path">~</span><span class="dollar">$ </span>';
+
+  const input = document.createElement('input');
+  input.id = 'command';
+  input.autocomplete = 'off';
+  input.autocapitalize = 'off';
+  input.spellcheck = false;
+
+  input.addEventListener('keydown', handleCommand);
+  line.append(prompt, input);
+  screen.appendChild(line);
+  input.focus();
+  terminal.scrollTop = terminal.scrollHeight;
+}
+
+function printLine(text, className = 'output') {
+  const line = document.createElement('div');
+  line.className = className;
+  line.textContent = text;
+  screen.appendChild(line);
+}
+
+function handleCommand(event) {
+  if (event.key !== 'Enter') return;
+
+  const input = event.currentTarget;
+  const command = input.value.trim().toLowerCase();
+
+  input.disabled = true;
+  input.removeAttribute('id');
+
+  if (!command) {
+    makePrompt();
+    return;
+  }
+
+  if (command === 'clear') {
+    screen.innerHTML = '';
+    makePrompt();
+    return;
+  }
+
+  // Only 96k opens the assignment list.
+  if (command === '96k') {
+    showAssignments();
+    return;
+  }
+
+  if (command === 'exit') {
+    printLine('exit');
+    printLine('logout');
+    printLine('The terminal session has ended.');
+
+    window.close();
+
+    setTimeout(() => {
+      if (!window.closed) {
+        printLine(
+          'Browser blocked automatic closing. Please close this tab manually.',
+          'muted'
+        );
+      }
+    }, 150);
+
+    return;
+  }
+
+  printLine(command + ': command not found');
+  makePrompt();
+}
+
+function showAssignments() {
+  screen.innerHTML = '';
+
+  const heading = document.createElement('div');
+  heading.className = 'list-heading';
+  heading.textContent = 'LIST OF ASSIGNMENTS';
+  screen.appendChild(heading);
+
+  const toolbar = document.createElement('div');
+  toolbar.className = 'toolbar';
+
+  const back = document.createElement('button');
+  back.className = 'back-btn';
+  back.textContent = '← Terminal';
+
+  back.addEventListener('click', () => {
+    screen.innerHTML = '';
+    makePrompt();
+  });
+
+  toolbar.appendChild(back);
+  screen.appendChild(toolbar);
+
+  assignments.forEach(assignment => {
+    const card = document.createElement('section');
+    card.className = 'assignment-card';
+
+    const title = document.createElement('div');
+    title.className = 'assignment-name';
+    title.textContent = assignment.title;
+
+    const statement = document.createElement('pre');
+    statement.className = 'statement';
+    statement.textContent = assignment.statement;
+
+    card.append(title, statement);
+
+    assignment.programs.forEach(program => {
+      const actions = document.createElement('div');
+      actions.className = 'program-actions';
+
+      const button = document.createElement('button');
+      button.className = 'copy-btn';
+      button.textContent = program.label;
+
+      const status = document.createElement('span');
+      status.className = 'status';
+      status.setAttribute('aria-live', 'polite');
+
+      button.addEventListener('click', async () => {
+        try {
+          await navigator.clipboard.writeText(program.code);
+          status.textContent = 'Copied ✓';
+        } catch (error) {
+          const area = document.createElement('textarea');
+          area.value = program.code;
+          area.style.position = 'fixed';
+          area.style.left = '-9999px';
+
+          document.body.appendChild(area);
+          area.select();
+
+          const success = document.execCommand('copy');
+          area.remove();
+
+          status.textContent = success ? 'Copied ✓' : 'Copy failed';
+        }
+
+        setTimeout(() => status.textContent = '', 2200);
+      });
+
+      actions.append(button, status);
+      card.appendChild(actions);
+    });
+
+    screen.appendChild(card);
+  });
+
+  terminal.scrollTop = 0;
+}
+
+document.getElementById('command')
+  .addEventListener('keydown', handleCommand);
+
+window.addEventListener('load', () => {
+  document.getElementById('command')?.focus();
+});
+
+</script>
+</body>
+</html>
